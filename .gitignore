@@ -1,2 +1,3 @@
 *.log
-persist/*
+persist/
+node_modules/
