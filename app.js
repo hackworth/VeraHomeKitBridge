@@ -45,11 +45,11 @@ function processDevices(devices) {
       break;
 
       case 7: // CATEGORY #7 - Door lock
-        if (device.name == "Garage Door") {
-        createGarageDoor(device);
-      } else {
-        createLock(device);
-      }
+        if (config.GarageDoors.indexOf(device.name) > -1 ) {
+          createGarageDoor(device);
+        } else {
+          createLock(device);
+        }
       break;
     }
   });

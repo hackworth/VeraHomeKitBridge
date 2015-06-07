@@ -1,4 +1,8 @@
 {
   "VeraIP": "10.10.0.6",
-  "PIN": "031-45-154"
+  "PIN": "031-45-154",
+  "GarageDoors":[
+    "Garage Door",
+    "Second Garage Door"
+  ]
 }
