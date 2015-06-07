@@ -1,8 +1,12 @@
 ##Setup
 
+If you're running Debian/Ubuntu, run the following two lines:
 ```
 sudo apt-get install build-essential libavahi-compat-libdnssd-dev
 curl -sL https://deb.nodesource.com/setup_0.12 | sudo bash -
+```
+
+```
 git clone --recursive https://github.com/Hackworth/VeraHomeKitBridge.git
 cd VeraHomeKitBridge
 npm install
@@ -11,7 +15,8 @@ npm install
 cd -
 ```
 
-Edit `app.js` entering your Vera's IP address
+Edit `config.json` entering your 1Vera's IP address and a PIN code for
+adding devices
 
 `npm run start`
 
