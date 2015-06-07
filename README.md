@@ -15,8 +15,7 @@ npm install
 cd -
 ```
 
-Edit `config.json` entering your 1Vera's IP address and a PIN code for
-adding devices
+Edit `config.json` entering your Vera's IP address
 
 `npm run start`
 
