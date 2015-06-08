@@ -41,7 +41,11 @@ function processDevices(devices) {
       break;
 
       case 3: // CATEGORY #3 - Switch
-        createLight(device);
+        if (config.GarageDoors.indexOf(device.name) > -1 ) {
+          createGarageDoor(device);
+        } else {
+          createLight(device);
+        }
       break;
 
       case 7: // CATEGORY #7 - Door lock
