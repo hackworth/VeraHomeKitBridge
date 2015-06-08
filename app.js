@@ -149,7 +149,7 @@ function createHomeKitAccessory(accessory) {
   usernames[username] = name;
 
   // increment ports for each accessory
-  nextPort = nextPort + (nextServer+5);
+  nextPort = nextPort + (nextServer+1);
 
   var pincode = config.PIN;
 

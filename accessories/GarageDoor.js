@@ -21,8 +21,14 @@ GarageDoor.prototype = {
 
     var binaryState = unlocked ? 1 : 0;
     var self = this;
-    request.get({url: "http://" + this.veraIP + ":3480/data_request?id=lu_action&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:upnp-org:serviceId:SwitchPower1&action=SetTarget&newTargetValue=" + binaryState})
-    request.get({url: "http://" + this.veraIP + ":3480/data_request?id=lu_action&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:micasaverde-com:serviceId:DoorLock1&action=SetTarget&newTargetValue=" + binaryState},
+
+    request({ url: "http://" + _veraIP + ":3480/data_request?id=finddevice&devnum=" + device.id },
+            function (error, response, body) {
+              var urn = body.split(',')[2];
+            }
+           );
+
+    request.get({url: "http://" + this.veraIP + ":3480/data_request?id=lu_action&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=" + urn + "&action=SetTarget&newTargetValue=" + binaryState},
                 function(err, response, body) {
                   if (!err && response.statusCode == 200) {
                     if (!unlocked) {
@@ -53,9 +59,9 @@ GarageDoor.prototype = {
     var that = this;
     return [{
 
-      sType: types.ACCESSORY_INFORMATION_STYPE, 
+      sType: types.ACCESSORY_INFORMATION_STYPE,
       characteristics: [{
-        cType: types.NAME_CTYPE, 
+        cType: types.NAME_CTYPE,
         onUpdate: null,
         perms: ["pr"],
         format: "string",
@@ -63,9 +69,9 @@ GarageDoor.prototype = {
         supportEvents: false,
         supportBonjour: false,
         manfDescription: "Name of the accessory",
-        designedMaxLength: 255    
+        designedMaxLength: 255
       },{
-        cType: types.MANUFACTURER_CTYPE, 
+        cType: types.MANUFACTURER_CTYPE,
         onUpdate: null,
         perms: ["pr"],
         format: "string",
@@ -73,7 +79,7 @@ GarageDoor.prototype = {
         supportEvents: false,
         supportBonjour: false,
         manfDescription: "Manufacturer",
-        designedMaxLength: 255    
+        designedMaxLength: 255
       },{
         cType: types.MODEL_CTYPE,
         onUpdate: null,
@@ -83,9 +89,9 @@ GarageDoor.prototype = {
         supportEvents: false,
         supportBonjour: false,
         manfDescription: "Model",
-        designedMaxLength: 255    
+        designedMaxLength: 255
       },{
-        cType: types.SERIAL_NUMBER_CTYPE, 
+        cType: types.SERIAL_NUMBER_CTYPE,
         onUpdate: null,
         perms: ["pr"],
         format: "string",
@@ -93,9 +99,9 @@ GarageDoor.prototype = {
         supportEvents: false,
         supportBonjour: false,
         manfDescription: "SN",
-        designedMaxLength: 255    
+        designedMaxLength: 255
       },{
-        cType: types.IDENTIFY_CTYPE, 
+        cType: types.IDENTIFY_CTYPE,
         onUpdate: null,
         perms: ["pw"],
         format: "bool",
@@ -103,10 +109,10 @@ GarageDoor.prototype = {
         supportEvents: false,
         supportBonjour: false,
         manfDescription: "Identify Accessory",
-        designedMaxLength: 1    
+        designedMaxLength: 1
       }]
     },{
-      sType: types.GARAGE_DOOR_OPENER_STYPE, 
+      sType: types.GARAGE_DOOR_OPENER_STYPE,
       characteristics: [{
         cType: types.NAME_CTYPE,
         onUpdate: null,
@@ -116,7 +122,7 @@ GarageDoor.prototype = {
         supportEvents: false,
         supportBonjour: false,
         manfDescription: "Name of service",
-        designedMaxLength: 255   
+        designedMaxLength: 255
       },{
         cType: types.CURRENT_DOOR_STATE_CTYPE,
         onUpdate: function(value) { console.log("Change:",value); execute("Garage Door", "Current State", value); },
@@ -129,7 +135,7 @@ GarageDoor.prototype = {
         designedMinValue: 0,
         designedMaxValue: 4,
         designedMinStep: 1,
-        designedMaxLength: 1    
+        designedMaxLength: 1
       },{
         cType: types.TARGET_DOORSTATE_CTYPE,
         onUpdate: function(value) { that.onSetUnlocked(value); },
@@ -143,7 +149,7 @@ GarageDoor.prototype = {
         designedMinValue: 0,
         designedMaxValue: 1,
         designedMinStep: 1,
-        designedMaxLength: 1    
+        designedMaxLength: 1
       },{
         cType: types.OBSTRUCTION_DETECTED_CTYPE,
         onUpdate: function(value) { console.log("Change:",value); execute("Garage Door", "Obstruction Detected", value); },
