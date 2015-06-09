@@ -10,6 +10,7 @@
     "node-persist": "0.0.x",
     "xmldoc": "0.1.x",
     "underscore": "1.8.x",
-    "mdns": "2.2.x"
+    "mdns": "2.2.x",
+    "portfinder": "0.4.0"
   }
 }

@@ -4,7 +4,8 @@ var storage = require('node-persist');
 storage.initSync();
 var crypto = require('crypto');
 var request = require("request");
-var _ = require("underscore");
+var _ = require('underscore');
+var portfinder = require('portfinder');
 
 var configPath = path.join(__dirname, "config.json");
 var config = JSON.parse(fs.readFileSync(configPath));
@@ -95,9 +96,6 @@ var accessoryController_Factor = new require("./lib/HAP-NodeJS/AccessoryControll
 var service_Factor = new require("./lib/HAP-NodeJS/Service.js");
 var characteristic_Factor = new require("./lib/HAP-NodeJS/Characteristic.js");
 
-// Each accessory has its own little server. We'll need to allocate some ports for these servers
-//var nextPort = 51826;
-var nextPort = 50000;
 var nextServer = 0;
 var accessoryServers = [];
 var accessoryControllers = [];
@@ -148,17 +146,19 @@ function createHomeKitAccessory(accessory) {
   // remember that we used this name already
   usernames[username] = name;
 
-  // increment ports for each accessory
-  nextPort = nextPort + (nextServer+1);
 
   var pincode = config.PIN;
 
-  var accessory = new accessory_Factor.Accessory(name, username, storage, parseInt(nextPort), pincode, accessoryController);
-  accessoryServers[nextServer] = accessory;
-  accessoryControllers[nextServer] = accessoryController;
-  accessory.publishAccessory();
+  portfinder.basePort = 51826
+  portfinder.getPort(function (err,port) {
+    var accessory = new accessory_Factor.Accessory(name, username, storage, parseInt(port), pincode, accessoryController);
+    accessoryServers[nextServer] = accessory;
+    accessoryControllers[nextServer] = accessoryController;
+    accessory.publishAccessory();
+  });
 
   nextServer++;
+
 }
 //
 // Creates a unique "username" for HomeKit from a hash of the given string
