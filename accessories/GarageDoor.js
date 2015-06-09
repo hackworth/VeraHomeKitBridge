@@ -8,6 +8,17 @@ function GarageDoor(veraIP, device) {
   this.name = device.name;
 }
 
+function CorrectUrn(founddevice) {
+    switch (founddevice.split(',')[2]) {
+      case "urn:schemas-micasaverde-com:device:DoorLock:1":
+        return "urn:micasaverde-com:serviceId:DoorLock1";
+      break;
+      case "urn:schemas-upnp-org:device:BinaryLight:1":
+        return "urn:upnp-org:serviceId:SwitchPower1";
+      break;
+    }
+}
+
 GarageDoor.prototype = {
 
   onSetUnlocked: function(unlocked) {
@@ -22,26 +33,24 @@ GarageDoor.prototype = {
     var binaryState = unlocked ? 1 : 0;
     var self = this;
 
-    request({ url: "http://" + _veraIP + ":3480/data_request?id=finddevice&devnum=" + device.id },
-            function (error, response, body) {
-              var urn = body.split(',')[2];
-            }
-           );
-
-    request.get({url: "http://" + this.veraIP + ":3480/data_request?id=lu_action&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=" + urn + "&action=SetTarget&newTargetValue=" + binaryState},
-                function(err, response, body) {
-                  if (!err && response.statusCode == 200) {
-                    if (!unlocked) {
-                      console.log("The " + self.device.name + " has been opened");
-                    } else {
-                      console.log("The " + self.device.name + " has been closed");
-                    }
-                  } else {
-                    console.log("Error '" + err + "' opening/closing the " + self.device.name + ":  " + body);
-                  }
+    request.get({ url: "http://" + self.veraIP + ":3480/data_request?id=finddevice&devnum=" + self.device.id },
+                function (error, response, body) {
+                  self.urn = CorrectUrn(body);
+                  request.get({url: "http://" + self.veraIP + ":3480/data_request?id=lu_action&output_format=xml&DeviceNum=" + self.device.id + "&serviceId=" + self.urn + "&action=SetTarget&newTargetValue=" + binaryState},
+                              function(err, response, body) {
+                                if (!err && response.statusCode == 200) {
+                                  if (!unlocked) {
+                                    console.log("The " + self.device.name + " has been opened");
+                                  } else {
+                                    console.log("The " + self.device.name + " has been closed");
+                                  }
+                                } else {
+                                  console.log("Error '" + err + "' opening/closing the " + self.device.name + ":  " + body);
+                                }
+                              }
+                             );
                 }
                );
-
   },
 
   /**
