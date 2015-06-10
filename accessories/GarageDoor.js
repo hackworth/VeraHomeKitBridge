@@ -30,7 +30,7 @@ GarageDoor.prototype = {
       console.log("Closing the " + this.device.name);
     }
 
-    var binaryState = unlocked ? 1 : 0;
+    var binaryState = unlocked ? 0 : 1;
     var self = this;
 
     request.get({ url: "http://" + self.veraIP + ":3480/data_request?id=finddevice&devnum=" + self.device.id },
