@@ -19,27 +19,38 @@ function CorrectUrn(founddevice) {
     }
 }
 
+function CorrectState(newState, urn) {
+    switch (urn) {
+      case "urn:micasaverde-com:serviceId:DoorLock1":
+        return newState ? 1 : 0;
+      break;
+      case "urn:upnp-org:serviceId:SwitchPower1":
+        return newState ? 0 : 1;
+      break;
+    }
+}
+
 GarageDoor.prototype = {
 
-  onSetUnlocked: function(unlocked) {
+  onSetUnlocked: function(newState) {
 
 
-    if (!unlocked) {
+    if (!newState) {
       console.log("Opening the " + this.device.name);
     } else {
       console.log("Closing the " + this.device.name);
     }
 
-    var binaryState = unlocked ? 1 : 0;
     var self = this;
 
     request.get({ url: "http://" + self.veraIP + ":3480/data_request?id=finddevice&devnum=" + self.device.id },
                 function (error, response, body) {
                   self.urn = CorrectUrn(body);
-                  request.get({url: "http://" + self.veraIP + ":3480/data_request?id=lu_action&output_format=xml&DeviceNum=" + self.device.id + "&serviceId=" + self.urn + "&action=SetTarget&newTargetValue=" + binaryState},
+                  self.binaryState = CorrectState(newState, self.urn);
+                  request.get({url: "http://" + self.veraIP + ":3480/data_request?id=lu_action&output_format=xml&DeviceNum=" + self.device.id + "&serviceId=" + self.urn + "&action=SetTarget&newTargetValue=" + self.binaryState},
                               function(err, response, body) {
                                 if (!err && response.statusCode == 200) {
-                                  if (!unlocked) {
+                                  if (!newState) {
                                     console.log("The " + self.device.name + " has been opened");
                                   } else {
                                     console.log("The " + self.device.name + " has been closed");
