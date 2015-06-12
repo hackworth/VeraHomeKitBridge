@@ -56,6 +56,10 @@ function processDevices(devices) {
           createLock(device);
         }
       break;
+      
+      case 8: // CATEGORY #8 - Window Covering:
+        createWindowCovering(device);
+      break;
     }
   });
 }
@@ -87,6 +91,12 @@ function createLock(device) {
 function createGarageDoor(device) {
   var GarageDoor = require("./accessories/GarageDoor.js");
   var accessory = new GarageDoor.initializeWithDevice(_veraIP, device);
+  createHomeKitAccessory(accessory);
+}
+
+function createWindowCovering(device) {
+  var WindowCovering = require("./accessories/WindowCovering.js");
+  var accessory = new WindowCovering.initializeWithDevice(_veraIP, device);
   createHomeKitAccessory(accessory);
 }
 
