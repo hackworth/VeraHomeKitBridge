@@ -40,7 +40,7 @@ WindowCovering.prototype = {
 				if (nextCoveringLevel) {
 					var level = nextCoveringLevel;
 					nextCoveringLevel = null;
-					self.onSetBrightness(level);
+					self.onSetLevel(level);
 				}
 			}
 		);
