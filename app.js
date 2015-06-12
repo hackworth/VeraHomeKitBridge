@@ -56,6 +56,9 @@ function processDevices(devices) {
           createLock(device);
         }
       break;
+      case 8: // CATEGORY #2 - Window Covering (They act just like a dimmable light):
+        createDimmableLight(device);
+      break;
     }
   });
 }
