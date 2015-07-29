@@ -1,10 +1,12 @@
 ##Setup
 
-If you're running Debian/Ubuntu, run the following two lines:
+Install Node and git for your operating system. If you're running Debian/Ubuntu, you can run the following two lines:
 ```
-sudo apt-get install build-essential libavahi-compat-libdnssd-dev
+sudo apt-get install build-essential libavahi-compat-libdnssd-dev git
 curl -sL https://deb.nodesource.com/setup_0.12 | sudo bash -
 ```
+
+Next, run the following lines to install the bridge
 
 ```
 git clone --recursive https://github.com/Hackworth/VeraHomeKitBridge.git
@@ -15,11 +17,14 @@ npm install
 cd -
 ```
 
-Edit `config.json` entering your Vera's IP address
+Edit `config.json`, enter your Vera's IP address as well as the names of your garage doors, if any. This is case sensative.
 
+Finally, run the following to start the HomeKit bridge:
 `npm run start`
 
-##Assumptions
+There are several applications in the iOS App Store you can use to add HomeKit devices, MyTouchHome and Eve are known to work. The PIN code for adding devices is listed in the config file you edited earlier.
+
+##Scenes
 
 VeraHomeKitBridge will treat Vera pairs of scenes as binary switches.
 For example, if you have two scenes named *Media Center - On* and
