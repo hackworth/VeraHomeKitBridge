@@ -94,51 +94,18 @@ function createGarageDoor(device) {
 }
 
 // Pull in required HAP-NodeJS stuff
-var accessory_Factor = new require("./lib/HAP-NodeJS/Accessory.js");
-var accessoryController_Factor = new require("./lib/HAP-NodeJS/AccessoryController.js");
-var service_Factor = new require("./lib/HAP-NodeJS/Service.js");
-var characteristic_Factor = new require("./lib/HAP-NodeJS/Characteristic.js");
+var accessory_Factor = new require("./lib/HAP-NodeJS/lib/Accessory.js");
+var accessory_Loader = new require("./lib/HAP-NodeJS/lib/AccessoryLoader.js");
+var service_Factor = new require("./lib/HAP-NodeJS/lib/Service.js");
+var characteristic_Factor = new require("./lib/HAP-NodeJS/lib/Characteristic.js");
 
 var nextServer = 0;
 var accessoryServers = [];
-var accessoryControllers = [];
 var usernames = {};
 
 function createHomeKitAccessory(accessory) {
 
   var name = accessory.name;
-  var services = accessory.getServices();
-
-  console.log("Create accessory: " + accessory.name);
-  //createHAPServer(name, services)
-  //process.exit(1);
-
-  var accessoryController = new accessoryController_Factor.AccessoryController();
-
-  // Add the services to the accessory
-  for (var j = 0; j < services.length; j++) {
-    var service = new service_Factor.Service(services[j].sType);
-    for (var k = 0; k < services[j].characteristics.length; k++) {
-      var options = {
-        type: services[j].characteristics[k].cType,
-        perms: services[j].characteristics[k].perms,
-        format: services[j].characteristics[k].format,
-        initialValue: services[j].characteristics[k].initialValue,
-        supportEvents: services[j].characteristics[k].supportEvents,
-        supportBonjour: services[j].characteristics[k].supportBonjour,
-        manfDescription: services[j].characteristics[k].manfDescription,
-        designedMaxLength: services[j].characteristics[k].designedMaxLength,
-        designedMinValue: services[j].characteristics[k].designedMinValue,
-        designedMaxValue: services[j].characteristics[k].designedMaxValue,
-        designedMinStep: services[j].characteristics[k].designedMinStep,
-        unit: services[j].characteristics[k].unit
-      };
-      var characteristic = new characteristic_Factor.Characteristic(options, services[j].characteristics[k].onUpdate);
-      service.addCharacteristic(characteristic);
-    }
-    accessoryController.addService(service);
-  }
-
   // create a unique "username" for this accessory based on the default display name
   var username = createUsername(name);
   if (usernames[username]) {
@@ -148,20 +115,32 @@ function createHomeKitAccessory(accessory) {
 
   // remember that we used this name already
   usernames[username] = name;
-
-
   var pincode = config.PIN;
+
+  //to be loaded by new accessory loader
+  var accessoryJSON = {};
+  accessoryJSON["displayName"] = accessory.name;
+  accessoryJSON["username"] = username;
+  accessoryJSON["pincode"] = pincode;
+
+  var services = accessory.getServices();
+  accessoryJSON["services"] = services;
+
+  console.log("Create accessory: " + accessory.name);
 
   portfinder.basePort = 51826
   portfinder.getPort(function (err,port) {
-    var accessory = new accessory_Factor.Accessory(name, username, storage, parseInt(port), pincode, accessoryController);
+
+    var accessory = accessory_Loader.parseAccessoryJSON(accessoryJSON);
     accessoryServers[nextServer] = accessory;
-    accessoryControllers[nextServer] = accessoryController;
-    accessory.publishAccessory();
+    accessory.publish({
+      port: parseInt(port),
+      username: accessory.username,
+      pincode: accessory.pincode
+    });
   });
 
   nextServer++;
-
 }
 //
 // Creates a unique "username" for HomeKit from a hash of the given string
