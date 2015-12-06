@@ -93,7 +93,7 @@ GarageDoor.prototype = {
                   );
                 }
                );
-  }
+  },
 
   /**
    *  This method is called when the user tries to identify this accessory
