@@ -24,6 +24,7 @@ function getVeraDevices(veraIP) {
           function (error, response, body) {
             processDevices(body.devices);
             processScenes(body.scenes);
+            accessory_Loader.loadDirectory(__dirname+"/accessories");
           }
          );
 }
