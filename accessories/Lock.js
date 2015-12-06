@@ -13,31 +13,29 @@ Lock.prototype = {
 	/**
 	 *  This method is called when the lock is locked or unlocked
 	 */
-	onSetUnlocked: function(unlocked) {
+	onSetUnlocked: function(locked) {
 
-
-		if (unlocked) {
-			console.log("Unlocking the " + this.device.name);
-		} else {
+		if (locked) {
 			console.log("Locking the " + this.device.name);
+		} else {
+			console.log("Unlocking the " + this.device.name);
 		}
 
-		var binaryState = unlocked ? 0 : 1;
+		var binaryState = locked ? 1 : 0;
 		var self = this;
 		request.get({url: "http://" + this.veraIP + ":3480/data_request?id=lu_action&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:micasaverde-com:serviceId:DoorLock1&action=SetTarget&newTargetValue=" + binaryState},
 			function(err, response, body) {
 				if (!err && response.statusCode == 200) {
-					if (unlocked) {
-						console.log("The " + self.device.name + " has been unlocked");
-					} else {
+					if (locked) {
 						console.log("The " + self.device.name + " has been locked");
+					} else {
+                        console.log("The " + self.device.name + " has been unlocked");
 					}
 				} else {
 					console.log("Error '" + err + "' locking/unlocking the " + self.device.name + ":  " + body);
 				}
 			}
 		);
-
 	},
 
 	/**
@@ -50,6 +48,30 @@ Lock.prototype = {
 			console.log("User is finished identifying this accessory");
 		}
 	},
+
+    /**
+     *  This method is called when the user wants to read the state of this accessory
+     */
+    onLockStateRead: function(callback) {
+
+        console.log("Reading status on " + this.device.name);
+        var self = this;
+        request.get({url: "http://" + this.veraIP + ":3480/data_request?id=variableget&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:micasaverde-com:serviceId:DoorLock1&Variable=Status"},
+            function(err, response, body) {
+                if (!err && response.statusCode == 200) {
+
+                    var locked = parseInt(body) == 1;
+                    
+                    console.log("Read: Door is currently "+ locked ? "locked." : "unlocked.");
+
+                    callback(locked);
+                } else {
+                    console.log("Error '" + err + "' turning the " + self.device.name + " on/off:  " + body);
+                }
+            }
+        );
+
+    },
 
   getServices: function() {
     var that = this;
@@ -122,6 +144,7 @@ Lock.prototype = {
       {
         cType: types.POWER_STATE_CTYPE,
         onUpdate: function(value) { that.onSetUnlocked(value); },
+        onRead: function(callback) { that.onLockStateRead(callback); },
         perms: ["pw","pr","ev"],
         format: "bool",
         initialValue: false,
