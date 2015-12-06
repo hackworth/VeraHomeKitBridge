@@ -64,6 +64,37 @@ GarageDoor.prototype = {
                );
   },
 
+  onGetUnlocked: function(newState) {
+
+    console.log("Reading status on " + this.device.name);
+    var self = this;
+
+    request.get({ url: "http://" + self.veraIP + ":3480/data_request?id=finddevice&devnum=" + self.device.id },
+                function (error, response, body) {
+                  self.urn = CorrectUrn(body);
+                  self.binaryState = CorrectState(newState, self.urn);
+                  request.get({url: "http://" + this.veraIP + ":3480/data_request?id=variableget&output_format=xml&DeviceNum=" + this.device.id + "&serviceId="+self.urn+"&Variable=Status"},
+                    function(err, response, body) {
+                      if (!err && response.statusCode == 200) {
+
+                        var open = parseInt(body) == 0;
+
+                        if (open) {
+                          console.log("The " + self.device.name + " is open");
+                        } else {
+                          console.log("The " + self.device.name + " is closed");
+                        }
+
+                        callback(open);
+                      } else {
+                        console.log("Error '" + err + "' turning the " + self.device.name + " on/off:  " + body);
+                      }
+                    }
+                  );
+                }
+               );
+  }
+
   /**
    *  This method is called when the user tries to identify this accessory
    */
@@ -146,6 +177,7 @@ GarageDoor.prototype = {
       },{
         cType: types.CURRENT_DOOR_STATE_CTYPE,
         onUpdate: function(value) { console.log("Change:",value); execute("Garage Door", "Current State", value); },
+        onRead: function(callback) { console.log("Read:",value); onGetUnlocked(callback); },
         perms: ["pr","ev"],
         format: "int",
         initialValue: 0,
