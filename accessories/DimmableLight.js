@@ -26,12 +26,13 @@ DimmableLight.prototype = {
 		}
 
 		console.log("Setting the " + this.device.name + " brightness to " + brightness + "%");
+        var result = brightness
 
 		var self = this;
 		request.get({url: "http://" + this.veraIP + ":3480/data_request?id=lu_action&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:upnp-org:serviceId:Dimming1&action=SetLoadLevelTarget&newLoadlevelTarget=" + brightness},
 			function(err, response, body) {
 				if (!err && response.statusCode == 200) {
-					console.log("The " + self.device.name + " brightness has been changed to " + brightness + "%");
+					console.log("The " + self.device.name + " brightness has been changed to " + result + "%");
 				} else {
 					console.log("Error '" + err + "' changing the " + self.device.name + " brightness:  " + body);
 				}
@@ -45,6 +46,27 @@ DimmableLight.prototype = {
 		);
 
 	},
+
+    /**
+     *  This method is called when the light is to be read
+     */
+    onGetBrightness: function(callback) {
+
+        var self = this;
+
+        request.get({url: "http://" + this.veraIP + ":3480/data_request?id=variableget&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:upnp-org:serviceId:Dimming1&Variable=LoadLevelStatus"},
+            function(err, response, body) {
+                if (!err && response.statusCode == 200) {
+
+                    console.log("The " + self.device.name + " brightness is at " + result + "%");
+
+                    callback(parseFloat(body));
+                } else {
+                    console.log("Error '" + err + "' reading the " + self.device.name + " brightness:  " + body);
+                }
+            }
+        );
+    },
 
 	/**
 	 *  This method is called when the light is turned on or off
@@ -73,6 +95,36 @@ DimmableLight.prototype = {
 			}
 		);
 	},
+
+    /**
+     *  This method is called when the light is to be read
+     */
+    onGetPowerState: function(callback) {
+
+        console.log("Reading status on " + this.device.name);
+        var self = this;
+
+        request.get({url: "http://" + this.veraIP + ":3480/data_request?id=variableget&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:upnp-org:serviceId:SwitchPower1&Variable=Status"},
+            function(err, response, body) {
+                if (!err && response.statusCode == 200) {
+
+                    console.log("Dimmer Light body :"+body);
+
+                    var powerOn = parseInt(body) == 1;
+
+                    if (powerOn) {
+                        console.log("The " + self.device.name + " has been turned on");
+                    } else {
+                        console.log("The " + self.device.name + " has been turned off");
+                    }
+
+                    callback(powerOn ? 1 : 0);
+                } else {
+                    console.log("Error '" + err + "' reading " + self.device.name + " on/off:  " + body);
+                }
+            }
+        );
+    },
 
 	/**
 	 *  This method is called when the user tries to identify this accessory
@@ -156,6 +208,7 @@ DimmableLight.prototype = {
       {
     	cType: types.BRIGHTNESS_CTYPE,
     	onUpdate: function(value) { that.onSetBrightness(value); },
+        onRead: function(callback) { that.onGetBrightness(callback); },
     	perms: ["pw","pr","ev"],
 		format: "int",
 		initialValue: 0,
@@ -170,6 +223,7 @@ DimmableLight.prototype = {
       {
         cType: types.POWER_STATE_CTYPE,
         onUpdate: function(value) { that.onSetPowerState(value); },
+        onRead: function(callback) { that.onGetPowerState(callback); },
         perms: ["pw","pr","ev"],
         format: "bool",
         initialValue: false,

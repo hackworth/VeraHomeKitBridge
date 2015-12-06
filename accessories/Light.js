@@ -39,6 +39,34 @@ Light.prototype = {
 	},
 
 	/**
+	 *  This method is called when the light is to be read
+	 */
+	onGetPowerState: function(callback) {
+
+		console.log("Reading status on " + this.device.name);
+		var self = this;
+
+		request.get({url: "http://" + this.veraIP + ":3480/data_request?id=variableget&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:upnp-org:serviceId:SwitchPower1&Variable=Status"},
+			function(err, response, body) {
+				if (!err && response.statusCode == 200) {
+
+					var powerOn = parseInt(body) == 1;
+
+					if (powerOn) {
+						console.log("The " + self.device.name + " is turned on");
+					} else {
+						console.log("The " + self.device.name + " is turned off");
+					}
+
+					callback(powerOn);
+				} else {
+					console.log("Error '" + err + "' reading the " + self.device.name + " on/off:  " + body);
+				}
+			}
+		);
+	},
+
+	/**
 	 *  This method is called when the user tries to identify this accessory
 	 */
 	onIdentify: function(identify) {
@@ -120,6 +148,7 @@ Light.prototype = {
       {
         cType: types.POWER_STATE_CTYPE,
         onUpdate: function(value) { that.onSetPowerState(value); },
+		onRead: function(callback) { that.onGetPowerState(callback); },
         perms: ["pw","pr","ev"],
         format: "bool",
         initialValue: false,
