@@ -1,7 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var storage = require('node-persist');
-storage.initSync();
+var libStorage = require('./lib/HAP-NodeJS/node_modules/node-persist');
 var crypto = require('crypto');
 var request = require("request");
 var _ = require('underscore');
@@ -10,6 +10,9 @@ var portfinder = require('portfinder');
 var configPath = path.join(__dirname, "config.json");
 var config = JSON.parse(fs.readFileSync(configPath));
 var _veraIP = config.VeraIP;
+
+storage.initSync();
+libStorage.initSync();
 
 console.log("Starting Vera HomeKit Bridge...");
 getVeraDevices(_veraIP);
