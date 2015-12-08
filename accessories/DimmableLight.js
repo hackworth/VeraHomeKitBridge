@@ -58,7 +58,7 @@ DimmableLight.prototype = {
             function(err, response, body) {
                 if (!err && response.statusCode == 200) {
 
-                    console.log("The " + self.device.name + " brightness is at " + result + "%");
+                    console.log("The " + self.device.name + " brightness is at " + body + "%");
 
                     callback(parseFloat(body));
                 } else {
