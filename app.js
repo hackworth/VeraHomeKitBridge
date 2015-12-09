@@ -6,6 +6,7 @@ var crypto = require('crypto');
 var request = require("request");
 var _ = require('underscore');
 var portfinder = require('portfinder');
+portfinder.basePort = 51826
 
 var configPath = path.join(__dirname, "config.json");
 var config = JSON.parse(fs.readFileSync(configPath));
@@ -108,8 +109,6 @@ var accessory_Loader = new require("./lib/HAP-NodeJS/lib/AccessoryLoader.js");
 var service_Factor = new require("./lib/HAP-NodeJS/lib/Service.js");
 var characteristic_Factor = new require("./lib/HAP-NodeJS/lib/Characteristic.js");
 
-var nextServer = 0;
-var accessoryServers = [];
 var usernames = {};
 
 function createHomeKitAccessory(accessory) {
@@ -137,19 +136,14 @@ function createHomeKitAccessory(accessory) {
 
   console.log("Create accessory: " + accessory.name);
 
-  portfinder.basePort = 51826
-  portfinder.getPort(function (err,port) {
-
+  portfinder.getPort({host: '127.0.0.1'},function (err,port) {
     var accessory = accessory_Loader.parseAccessoryJSON(accessoryJSON);
-    accessoryServers[nextServer] = accessory;
     accessory.publish({
       port: parseInt(port),
       username: accessory.username,
       pincode: accessory.pincode
     });
   });
-
-  nextServer++;
 }
 //
 // Creates a unique "username" for HomeKit from a hash of the given string
