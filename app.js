@@ -22,9 +22,14 @@ function getVeraDevices(veraIP) {
 
   request({ url: url, json: true },
           function (error, response, body) {
-            processDevices(body.devices);
-            processScenes(body.scenes);
-            accessory_Loader.loadDirectory(__dirname+"/accessories");
+            if (error) {
+              console.log("Can't contact Vera. Check IP in config.json");
+              Error(error);
+            } else {
+              processDevices(body.devices);
+              processScenes(body.scenes);
+              accessory_Loader.loadDirectory(__dirname+"/accessories");
+            }
           }
          );
 }
