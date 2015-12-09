@@ -32,16 +32,16 @@ For example, if you have two scenes named *Media Center - On* and
 and inteligently run the correct scene if you asked it to turn on or
 off.
 
-##Upgrading
+##Updating
 
-Periodic updates of HAP-NodeJS are required for new versions of iOS,
-here are complete instructions for upgrading.
+Run the following to update:
 
 ```
 git pull
 git submodule foreach git pull
-rm -rf persist
 ```
+To do a full update, run `rm -rf persist`
+
 On your primary iOS device, Settings -> Privacy -> HomeKit -> Reset
 HomeKit Configuration...
 
