@@ -1,16 +1,20 @@
 var fs = require('fs');
 var path = require('path');
-var storage = require('node-persist');
-var libStorage = require('./lib/HAP-NodeJS/node_modules/node-persist');
 var crypto = require('crypto');
 var request = require("request");
 var _ = require('underscore');
+var Bridge = require('./lib/HAP-NodeJS/').Bridge;
+var uuid = require('./lib/HAP-NodeJS/').uuid;
+var Accessory = require('./lib/HAP-NodeJS/').Accessory;
+var storage = require('node-persist');
+var libStorage = require('./lib/HAP-NodeJS/node_modules/node-persist');
 var portfinder = require('portfinder');
 portfinder.basePort = 51826
 
 var configPath = path.join(__dirname, "config.json");
 var config = JSON.parse(fs.readFileSync(configPath));
 var _veraIP = config.VeraIP;
+var bridge = new Bridge('Vera Bridge', uuid.generate("Vera Bridge"));
 
 storage.initSync();
 libStorage.initSync();
@@ -30,6 +34,14 @@ function getVeraDevices(veraIP) {
               processDevices(body.devices);
               processScenes(body.scenes);
               accessory_Loader.loadDirectory(__dirname+"/accessories");
+              portfinder.getPort({host: '127.0.0.1'},function (err,port) {
+                bridge.publish({
+                  username: "CC:22:3D:E3:CE:F6",
+                  port: parseInt(port),
+                  pincode: config.PIN,
+                  category: Accessory.Categories.OTHER
+                });
+              });
             }
           }
          );
@@ -110,6 +122,7 @@ var service_Factor = new require("./lib/HAP-NodeJS/lib/Service.js");
 var characteristic_Factor = new require("./lib/HAP-NodeJS/lib/Characteristic.js");
 
 var usernames = {};
+var accessories = [];
 
 function createHomeKitAccessory(accessory) {
 
@@ -123,27 +136,19 @@ function createHomeKitAccessory(accessory) {
 
   // remember that we used this name already
   usernames[username] = name;
-  var pincode = config.PIN;
 
   //to be loaded by new accessory loader
   var accessoryJSON = {};
   accessoryJSON["displayName"] = accessory.name;
   accessoryJSON["username"] = username;
-  accessoryJSON["pincode"] = pincode;
 
   var services = accessory.getServices();
   accessoryJSON["services"] = services;
 
   console.log("Create accessory: " + accessory.name);
 
-  portfinder.getPort({host: '127.0.0.1'},function (err,port) {
-    var accessory = accessory_Loader.parseAccessoryJSON(accessoryJSON);
-    accessory.publish({
-      port: parseInt(port),
-      username: accessory.username,
-      pincode: accessory.pincode
-    });
-  });
+  var accessory = accessory_Loader.parseAccessoryJSON(accessoryJSON);
+  bridge.addBridgedAccessory(accessory);
 }
 //
 // Creates a unique "username" for HomeKit from a hash of the given string
