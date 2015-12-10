@@ -2,8 +2,8 @@
 
 Install Node and git for your operating system. If you're running Debian/Ubuntu, you can run the following two lines:
 ```
-sudo apt-get install build-essential libavahi-compat-libdnssd-dev git
-curl -sL https://deb.nodesource.com/setup_0.12 | sudo bash -
+curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash -
+sudo apt-get install -y nodejs build-essential libavahi-compat-libdnssd-dev git
 ```
 
 Next, run the following lines to install the bridge
@@ -40,7 +40,15 @@ Run the following to update:
 git pull
 git submodule foreach git pull
 ```
-To do a full update, run `rm -rf persist`
+To do a full update, run
+
+```
+rm -rf persist
+npm update
+cd lib/HAP-NodeJS
+npm update
+cd -
+```
 
 On your primary iOS device, Settings -> Privacy -> HomeKit -> Reset
 HomeKit Configuration...
