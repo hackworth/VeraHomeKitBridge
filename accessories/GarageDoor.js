@@ -168,7 +168,7 @@ GarageDoor.prototype = {
         onUpdate: null,
         perms: ["pr"],
         format: "string",
-        initialValue: "Garage Door Opener Control",
+        initialValue: this.name,
         supportEvents: false,
         supportBonjour: false,
         manfDescription: "Name of service",
