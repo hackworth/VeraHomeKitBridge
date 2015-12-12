@@ -3,75 +3,74 @@ var request = require("request");
 
 
 function Lock(veraIP, device) {
-  this.device = device;
-  this.veraIP = veraIP;
-  this.name = device.name;
+    this.device = device;
+    this.veraIP = veraIP;
+    this.name = device.name;
 }
 
 Lock.prototype = {
+	/**
+	 *  This method is called when the lock is locked or unlocked
+	 */
+  onSetUnlocked: function(locked) {
+	if (locked) {
+	console.log("Unlocking the " + this.device.name);
+	} else {
+	console.log("locking the " + this.device.name);
+	}
 
-  /**
-   *  This method is called when the lock is locked or unlocked
-   */
-  onSetUnlocked: function(unlocked) {
+		var binaryState = locked ? 1 : 0;
+		var self = this;
 
-    if (unlocked) {
-      console.log("Unlocking the " + this.device.name);
-    } else {
-      console.log("Locking the " + this.device.name);
-    }
+		request.get({url: "http://" + this.veraIP + ":3480/data_request?id=lu_action&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:micasaverde-com:serviceId:DoorLock1&action=SetTarget&newTargetValue=" + binaryState},
+			
+               function(err, response, body) {
+			if (!err && response.statusCode == 200) {
+				if (locked) {
+				console.log("The " + self.device.name + " has been locked");
+				} else {
+                        	console.log("The " + self.device.name + " has been unlocked")
+				}
+				} else {
+				console.log("Error '" + err + "' locking/unlocking the " + self.device.name + ":  " + body);
+				}
+			}
+		)
+	},
 
-    var binaryState = unlocked ? 0 : 1;
-    var self = this;
-    request.get({url: "http://" + this.veraIP + ":3480/data_request?id=lu_action&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:micasaverde-com:serviceId:DoorLock1&action=SetTarget&newTargetValue=" + binaryState},
-                function(err, response, body) {
-                  if (!err && response.statusCode == 200) {
-                    if (unlocked) {
-                      console.log("The " + self.device.name + " has been unlocked");
-                    } else {
-                      console.log("The " + self.device.name + " has been locked");
-                    }
-                  } else {
-                    console.log("Error '" + err + "' locking/unlocking the " + self.device.name + ":  " + body);
-                  }
-                }
-               );
-  },
+    onLockStateRead: function(callback) {
 
-  /**
-   *  This method is called when the user tries to identify this accessory
-   */
-  onIdentify: function(identify) {
-    if (identify) {
-      console.log("User wants to identify this accessory");
-    } else {
-      console.log("User is finished identifying this accessory");
-    }
-  },
-
-  /**
-   *  This method is called when the user wants to read the state of this accessory
-   */
-  onLockStateRead: function(callback) {
-
-    console.log("Reading status on " + this.device.name);
-    var self = this;
-    request.get({url: "http://" + this.veraIP + ":3480/data_request?id=variableget&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:micasaverde-com:serviceId:DoorLock1&Variable=Status"},
-                function(err, response, body) {
-                  if (!err && response.statusCode == 200) {
-
+        console.log("Reading status on " + this.device.name);
+        
+        var self = this;
+        
+        request.get({url: "http://" + this.veraIP + ":3480/data_request?id=variableget&output_format=xml&DeviceNum=" + this.device.id + "&serviceId=urn:micasaverde-com:serviceId:DoorLock1&Variable=Status"},
+            function(err, response, body) {
+                if (!err && response.statusCode == 200) {
                     var locked = parseInt(body) == 1;
-
                     console.log("Read: Door is currently "+ locked ? "locked." : "unlocked.");
-
                     callback(locked);
-                  } else {
+                } else {
                     console.log("Error '" + err + "' turning the " + self.device.name + " on/off:  " + body);
-                  }
                 }
-               );
+            }
+        )
+    },
 
-  },
+/**
+	 *  This method is called when the user tries to identify this accessory
+	 */
+	onIdentify: function(identify) {
+		if (identify) {
+			console.log("User wants to identify this accessory");
+		} else {
+			console.log("User is finished identifying this accessory");
+		}
+	},
+
+    /**
+     *  This method is called when the user wants to read the state of this accessory
+     */
 
   getServices: function() {
     var that = this;
@@ -129,7 +128,7 @@ Lock.prototype = {
         designedMaxLength: 1
       }]
     },{
-      sType: types.LOCK_MANAGEMENT_STYPE,
+      sType: types.LOCK_MECHANISM_STYPE,
       characteristics: [{
         cType: types.NAME_CTYPE,
         onUpdate: null,
@@ -140,40 +139,45 @@ Lock.prototype = {
         supportBonjour: false,
         manfDescription: "Name of service",
         designedMaxLength: 255
-      },
-      {
-        cType: types.POWER_STATE_CTYPE,
+     },{
+        cType: types.CURRENT_LOCK_MECHANISM_STATE_CTYPE,
         onUpdate: function(value) { that.onSetUnlocked(value); },
         onRead: function(callback) { that.onLockStateRead(callback); },
-        perms: ["pw","pr","ev"],
-        format: "bool",
-        initialValue: false,
-        supportEvents: false,
-        supportBonjour: false,
-        manfDescription: "Lock or unlock",
-        designedMaxLength: 1
-      },{
-        cType: types.LOCK_MANAGEMENT_CONTROL_POINT_CTYPE,
-        onUpdate: function(value) { console.log("Change:",value);  },
-        perms: ["pw"],
-        format: "data",
+        perms: ["pr","ev"],
+        format: "int",
         initialValue: 0,
         supportEvents: false,
         supportBonjour: false,
         manfDescription: "BlaBla",
-        designedMaxLength: 255
+        designedMinValue: 0,
+        designedMaxValue: 4,
+        designedMinStep: 1,
+        designedMaxLength: 1
       },{
-        cType: types.VERSION_CTYPE,
-        onUpdate: function(value) { console.log("Change:",value); },
-        perms: ["pr"],
-        format: "string",
-        initialValue: "1.0",
+        cType: types.TARGET_LOCK_MECHANISM_STATE_CTYPE,
+        onUpdate: function(value) { that.onSetUnlocked(value); },
+        perms: ["pr","pw","ev"],
+        format: "int",
+        initialValue: 0,
         supportEvents: false,
         supportBonjour: false,
         manfDescription: "BlaBla",
-        designedMaxLength: 255
-      }]
-    }];
+        designedMinValue: 0,
+        designedMaxValue: 1,
+        designedMinStep: 1,
+        designedMaxLength: 1
+      },{
+    	cType: types.VERSION_CTYPE,
+    	onUpdate: function(value) { console.log("Change:",value); },
+    	perms: ["pr"],
+	format: "string",
+	initialValue: "1.0",
+	supportEvents: false,
+	supportBonjour: false,
+	manfDescription: "BlaBla",
+	designedMaxLength: 255
+    }]
+    }]
   }
 };
 
