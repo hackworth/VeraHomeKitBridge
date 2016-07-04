@@ -64,7 +64,7 @@ function processDevices(devices) {
       break;
 
       case 3: // CATEGORY #3 - Switch
-        if (device.subcategory === 5) {
+        if (config.GarageDoors.indexOf(device.name) > -1 ) {
           createGarageDoor(device);
         } else {
           createLight(device);
@@ -72,9 +72,12 @@ function processDevices(devices) {
       break;
 
       case 7: // CATEGORY #7 - Door lock
+        if (config.GarageDoors.indexOf(device.name) > -1 ) {
+          createGarageDoor(device);
+        } else {
           createLock(device);
+        }
       break;
-
       case 8: // CATEGORY #2 - Window Covering (They act just like a dimmable light):
         createDimmableLight(device);
       break;
