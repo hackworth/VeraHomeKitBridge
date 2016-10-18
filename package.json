@@ -6,7 +6,7 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "request": "2.49.x",
+    "request": "2.74.0",
     "node-persist": "0.0.x",
     "xmldoc": "0.1.x",
     "underscore": "1.8.x",
